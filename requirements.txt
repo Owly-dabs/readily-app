@@ -1,0 +1,8 @@
+pytest==8.4.2
+pytest-cov==7.0.0
+pylint==3.3.8
+black==25.9.0
+fire==0.7.1
+fastapi==0.117.1
+uvicorn==0.37.0
+httpx==0.28.1
