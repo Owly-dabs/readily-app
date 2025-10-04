@@ -5,10 +5,10 @@ install-uv:
 		uv pip install -r requirements.txt
 format:
 	# format code
-	black *.py 
+	black *.py */*.py
 lint:
 	# flake8 or pylint
-	pylint --disable=R,C *.py 
+	pylint --disable=R,C --ignore=streamlit_app.py *.py
 test:
 	# test
 	# 	python -m pytest -vv --cov=mylib test_*.py

@@ -8,6 +8,7 @@ import time
 # API Configuration
 API_URL = "https://readily-494772444195.europe-west1.run.app/audit"
 
+
 def extract_text_from_pdf(pdf_file) -> str:
     """Extract text content from uploaded PDF file."""
     try:
@@ -27,6 +28,7 @@ def extract_text_from_pdf(pdf_file) -> str:
         st.error(f"Error extracting text from PDF: {str(e)}")
         return ""
 
+
 def call_api(text_content: str) -> Optional[dict]:
     """Make POST request to the API with extracted text."""
     try:
@@ -45,21 +47,20 @@ def call_api(text_content: str) -> Optional[dict]:
         st.error(f"Failed to parse API response: {str(e)}")
         return None
 
+
 def main():
-    st.set_page_config(
-        page_title="PDF Text Extractor",
-        page_icon="📄",
-        layout="wide"
-    )
+    st.set_page_config(page_title="PDF Text Extractor", page_icon="📄", layout="wide")
 
     st.title("📄 PDF Text Extractor & API Processor")
-    st.markdown("Upload a PDF file to extract text and send it to the API for processing.")
+    st.markdown(
+        "Upload a PDF file to extract text and send it to the API for processing."
+    )
 
     # File uploader
     uploaded_file = st.file_uploader(
         "Choose a PDF file",
         type="pdf",
-        help="Select a PDF file to extract text content"
+        help="Select a PDF file to extract text content",
     )
 
     if uploaded_file is not None:
@@ -73,10 +74,7 @@ def main():
             if text_content:
                 st.subheader("📝 Extracted Text")
                 st.text_area(
-                    "Extracted Content",
-                    text_content,
-                    height=200,
-                    disabled=True
+                    "Extracted Content", text_content, height=200, disabled=True
                 )
 
                 # API call section
@@ -94,7 +92,7 @@ def main():
                         status.update(
                             label="✅ API Response Received",
                             state="complete",
-                            expanded=True
+                            expanded=True,
                         )
 
                         # Display response
@@ -102,9 +100,7 @@ def main():
                         st.json(response)
                     else:
                         status.update(
-                            label="❌ API Request Failed",
-                            state="error",
-                            expanded=True
+                            label="❌ API Request Failed", state="error", expanded=True
                         )
             else:
                 st.error("❌ No text content could be extracted from the PDF.")
@@ -112,14 +108,17 @@ def main():
         st.info("👆 Please upload a PDF file to get started.")
 
         # Instructions
-        st.markdown("""
+        st.markdown(
+            """
         ### How to use:
         1. **Upload PDF**: Click the file uploader above and select a PDF file
         2. **Extract & Process**: Click the "Extract Text and Process" button
         3. **View Results**: See the extracted text and API response below
 
         The app will show the progress and final results in real-time.
-        """)
+        """
+        )
+
 
 if __name__ == "__main__":
     main()

@@ -3,3 +3,4 @@ streamlit_app.py
 requirements-st.txt
 __pycache__
 .coverage
+.env

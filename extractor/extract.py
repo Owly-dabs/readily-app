@@ -1,4 +1,4 @@
-from vertexai.preview.generative_models import GenerativeModel
+from google import genai
 import json
 import re
 import logging
@@ -8,32 +8,34 @@ from typing import List, Dict, Optional
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-model = GenerativeModel("gemini-1.5-pro")
+
+client = genai.Client()
+
 
 def extract_compliance_questions(text: str) -> List[Dict[str, str]]:
-   """
-   Extract audit or compliance questions from the given text using Gemini AI.
+    """
+    Extract audit or compliance questions from the given text using Gemini AI.
 
-   Args:
-       text (str): The input text to analyze for compliance questions
+    Args:
+        text (str): The input text to analyze for compliance questions
 
-   Returns:
-       List[Dict[str, str]]: A list of dictionaries containing question_id and question_text
+    Returns:
+        List[Dict[str, str]]: A list of dictionaries containing question_id and question_text
 
-   Raises:
-       ValueError: If text is empty or None
-       json.JSONDecodeError: If the model response is not valid JSON
-       Exception: For other API or processing errors
-   """
-   # Input validation
-   if not text or not text.strip():
-       raise ValueError("Input text cannot be empty")
+    Raises:
+        ValueError: If text is empty or None
+        json.JSONDecodeError: If the model response is not valid JSON
+        Exception: For other API or processing errors
+    """
+    # Input validation
+    if not text or not text.strip():
+        raise ValueError("Input text cannot be empty")
 
-   # Clean and prepare the text
-   cleaned_text = _preprocess_text(text)
+    # Clean and prepare the text
+    cleaned_text = _preprocess_text(text)
 
-   # Create the prompt
-   prompt = f"""
+    # Create the prompt
+    prompt = f"""
 You are an expert compliance officer tasked with extracting audit and compliance questions from text.
 
 Please analyze the following text and extract ALL audit or compliance related questions.
@@ -60,98 +62,131 @@ Text to analyze:
 {cleaned_text}
 """
 
-   try:
-       # Generate response from Gemini
-       logger.info("Generating content from Gemini model...")
-       response = model.generate_content(prompt)
+    try:
+        # Generate response from Gemini
+        logger.info("Generating content from Gemini model...")
+        response = client.models.generate_content(
+            model="gemini-2.5-flash", contents=prompt
+        )
 
-       if not response or not response.text:
-           logger.warning("Empty response from model")
-           return []
+        if not response or not response.text:
+            logger.warning("Empty response from model")
+            return []
 
-       # Clean the response text (remove markdown formatting if present)
-       cleaned_response = _clean_model_response(response.text)
+        # Clean the response text (remove markdown formatting if present)
+        cleaned_response = _clean_model_response(response.text)
 
-       # Parse JSON response
-       questions = json.loads(cleaned_response)
+        # Parse JSON response
+        questions = json.loads(cleaned_response)
 
-       # Validate response format
-       if not isinstance(questions, list):
-           logger.error(f"Expected list from model, got {type(questions)}")
-           return []
+        # Validate response format
+        if not isinstance(questions, list):
+            logger.error(f"Expected list from model, got {type(questions)}")
+            return []
 
-       # Validate each question object
-       validated_questions = []
-       for i, question in enumerate(questions, 1):
-           if _is_valid_question(question):
-               # Ensure question_id matches the sequential order
-               question['question_id'] = i
-               validated_questions.append(question)
-           else:
-               logger.warning(f"Skipping invalid question format: {question}")
+        # Validate each question object
+        validated_questions = []
+        for i, question in enumerate(questions, 1):
+            if _is_valid_question(question):
+                # Ensure question_id matches the sequential order
+                question["question_id"] = i
+                validated_questions.append(question)
+            else:
+                logger.warning(f"Skipping invalid question format: {question}")
 
-       logger.info(f"Successfully extracted {len(validated_questions)} compliance questions")
-       return validated_questions
+        logger.info(
+            f"Successfully extracted {len(validated_questions)} compliance questions"
+        )
+        return validated_questions
 
-   except json.JSONDecodeError as e:
-       logger.error(f"Failed to parse JSON response: {e}")
-       logger.error(f"Response text: {response.text if response else 'No response'}")
-       raise json.JSONDecodeError(f"Invalid JSON response from model: {e}", e.doc, e.pos)
-   except Exception as e:
-       logger.error(f"Error extracting compliance questions: {e}")
-       raise Exception(f"Failed to extract compliance questions: {str(e)}")
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse JSON response: {e}")
+        logger.error(f"Response text: {response.text if response else 'No response'}")
+        raise json.JSONDecodeError(
+            f"Invalid JSON response from model: {e}", e.doc, e.pos
+        )
+    except Exception as e:
+        logger.error(f"Error extracting compliance questions: {e}")
+        raise Exception(f"Failed to extract compliance questions: {str(e)}")
+
 
 def _preprocess_text(text: str) -> str:
-   """Clean and prepare text for analysis."""
-   if not text:
-       return ""
+    """Clean and prepare text for analysis."""
+    if not text:
+        return ""
 
-   # Remove extra whitespace and normalize line endings
-   cleaned = re.sub(r'\n+', '\n', text.strip())
-   cleaned = re.sub(r'[ \t]+', ' ', cleaned)
+    # Remove extra whitespace and normalize line endings
+    cleaned = re.sub(r"\n+", "\n", text.strip())
+    cleaned = re.sub(r"[ \t]+", " ", cleaned)
 
-   # Remove page numbers or headers that might interfere
-   cleaned = re.sub(r'^\d+\s*$', '', cleaned, flags=re.MULTILINE)
+    # Remove page numbers or headers that might interfere
+    cleaned = re.sub(r"^\d+\s*$", "", cleaned, flags=re.MULTILINE)
 
-   return cleaned
+    return cleaned
+
 
 def _clean_model_response(response_text: str) -> str:
-   """Clean the model's response text."""
-   if not response_text:
-       return ""
+    """Clean the model's response text."""
+    if not response_text:
+        return ""
 
-   # Remove markdown code block formatting if present
-   cleaned = re.sub(r'```json\s*', '', response_text)
-   cleaned = re.sub(r'```\s*$', '', cleaned)
+    # Remove markdown code block formatting if present
+    cleaned = re.sub(r"```json\s*", "", response_text)
+    cleaned = re.sub(r"```\s*$", "", cleaned)
 
-   # Remove any leading/trailing whitespace
-   cleaned = cleaned.strip()
+    # Remove any leading/trailing whitespace
+    cleaned = cleaned.strip()
 
-   return cleaned
+    return cleaned
+
 
 def _is_valid_question(question: Dict) -> bool:
-   """Validate that a question object has the required format."""
-   if not isinstance(question, dict):
-       return False
+    """Validate that a question object has the required format."""
+    if not isinstance(question, dict):
+        return False
 
-   if 'question_text' not in question:
-       return False
+    if "question_text" not in question:
+        return False
 
-   question_text = question.get('question_text', '').strip()
-   if not question_text:
-       return False
+    question_text = question.get("question_text", "").strip()
+    if not question_text:
+        return False
 
-   # Check if it looks like a question (has question mark or question words)
-   question_indicators = ['?', 'what', 'how', 'when', 'where', 'why', 'who', 'which', 'do', 'does', 'did', 'is', 'are', 'was', 'were', 'can', 'could', 'should', 'would', 'will']
-   has_question_mark = '?' in question_text.lower()
-   has_question_word = any(word in question_text.lower() for word in question_indicators[:11])  # First 11 are question words
+    # Check if it looks like a question (has question mark or question words)
+    question_indicators = [
+        "?",
+        "what",
+        "how",
+        "when",
+        "where",
+        "why",
+        "who",
+        "which",
+        "do",
+        "does",
+        "did",
+        "is",
+        "are",
+        "was",
+        "were",
+        "can",
+        "could",
+        "should",
+        "would",
+        "will",
+    ]
+    has_question_mark = "?" in question_text.lower()
+    has_question_word = any(
+        word in question_text.lower() for word in question_indicators[:11]
+    )  # First 11 are question words
 
-   return has_question_mark or has_question_word
+    return has_question_mark or has_question_word
+
 
 # Example usage and testing function
 def test_extraction():
-   """Test function for the compliance question extraction."""
-   sample_text = """
+    """Test function for the compliance question extraction."""
+    sample_text = """
    Company Policy Review
 
    1. What is the current data retention policy?
@@ -164,16 +199,17 @@ def test_extraction():
    All policies are reviewed annually.
    """
 
-   try:
-       questions = extract_compliance_questions(sample_text)
-       print(f"Extracted {len(questions)} questions:")
-       for question in questions:
-           print(f"  {question['question_id']}: {question['question_text']}")
-       return questions
-   except Exception as e:
-       print(f"Error during testing: {e}")
-       return []
+    try:
+        questions = extract_compliance_questions(sample_text)
+        print(f"Extracted {len(questions)} questions:")
+        for question in questions:
+            print(f"  {question['question_id']}: {question['question_text']}")
+        return questions
+    except Exception as e:
+        print(f"Error during testing: {e}")
+        return []
+
 
 if __name__ == "__main__":
-   # Run test if script is executed directly
-   test_extraction()
+    # Run test if script is executed directly
+    test_extraction()
