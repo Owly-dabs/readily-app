@@ -4,3 +4,4 @@ requirements-st.txt
 __pycache__
 .coverage
 .env
+scra.py
