@@ -1,3 +1,7 @@
+load-env:
+	@echo "Loading environment variables from .env..."
+	@export $$(grep -v '^#' .env | xargs) && \
+	echo "Environment variables loaded."
 install:
 	pip install --upgrade pip &&\
 		pip install -r requirements.txt
