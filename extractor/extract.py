@@ -1,13 +1,8 @@
 from google import genai
 import json
 import re
-import logging
+from logs import logger
 from typing import List, Dict, Optional
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 
 client = genai.Client()
 
