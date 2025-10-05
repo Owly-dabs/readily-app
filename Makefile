@@ -12,7 +12,7 @@ format:
 	black *.py */*.py
 lint:
 	# flake8 or pylint
-	pylint --disable=R,C --ignore=streamlit_app.py *.py
+	pylint --disable=R,C,E0401 --ignore=streamlit_app.py *.py
 test:
 	# test
 	# 	python -m pytest -vv --cov=mylib test_*.py
