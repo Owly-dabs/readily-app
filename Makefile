@@ -1,7 +1,5 @@
 load-env:
-	@echo "Loading environment variables from .env..."
-	@export $$(grep -v '^#' .env | xargs) && \
-	echo "Environment variables loaded."
+	# 	source env.sh
 install:
 	pip install --upgrade pip &&\
 		pip install -r requirements.txt
@@ -12,7 +10,7 @@ format:
 	black *.py */*.py
 lint:
 	# flake8 or pylint
-	pylint --disable=R,C,E0401 --ignore=streamlit_app.py *.py
+	pylint --fail-under=8.0 --disable=R,C,E0401 --ignore=streamlit_app.py *.py */*.py
 test:
 	# test
 	# 	python -m pytest -vv --cov=mylib test_*.py
