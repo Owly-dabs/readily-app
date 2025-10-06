@@ -9,6 +9,7 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 EMBEDDING_MODEL = "models/gemini-embedding-001"
 DEFAULT_DIM = 768  # Can be 768, 512, 256, or 128
 
+
 def embed_text(text: str, dim: int = DEFAULT_DIM) -> list[float]:
     """
     Generate an embedding vector for a single text using Google Embedding Gemma.
@@ -51,6 +52,7 @@ def embed_texts(texts: list[str], dim: int = DEFAULT_DIM) -> list[list[float]]:
     )
     return response["embedding"]
 
+
 def test():
     sample_text = "This is a sample text to embed."
     embedding = embed_text(sample_text)
@@ -59,12 +61,13 @@ def test():
     sample_texts = [
         "First sample text.",
         "Second sample text, a bit longer than the first.",
-        "Third sample text is here!"
+        "Third sample text is here!",
     ]
     embeddings = embed_texts(sample_texts)
     print(f"Embeddings for multiple texts (count {len(embeddings)}):")
     for i, emb in enumerate(embeddings):
         print(f" Text {i+1} embedding (length {len(emb)}): {emb[:5]}...")
-        
+
+
 if __name__ == "__main__":
     test()

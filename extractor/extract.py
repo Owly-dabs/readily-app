@@ -91,7 +91,9 @@ Text to analyze:
                     ResponseItem(**question)
                     validated_questions.append(question)
                 except Exception as e:
-                    logger.warning(f"Skipping question that cannot be converted to ResponseItem: {question}, error: {e}")
+                    logger.warning(
+                        f"Skipping question that cannot be converted to ResponseItem: {question}, error: {e}"
+                    )
             else:
                 logger.warning(f"Skipping invalid question format: {question}")
 

@@ -9,6 +9,7 @@ logger.setLevel("INFO")
 # Configure API key
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
+
 def check_requirement(policy_text: str, requirement: str) -> dict:
     """
     Uses Google Gemini to determine if a requirement is met by a given policy+procedure text.
@@ -57,6 +58,7 @@ Respond in JSON with the following keys:
     try:
         # If model outputs valid JSON
         import json
+
         logger.debug(f"Model output: {text}")
         cleaned = re.sub(r"^```(?:json)?", "", text.strip(), flags=re.IGNORECASE)
         cleaned = re.sub(r"```$", "", cleaned.strip())

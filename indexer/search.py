@@ -1,6 +1,7 @@
 from indexer.db import get_connection
 from indexer.embed import embed_text
 
+
 def search_similar_purpose(query: str, top_k: int = 3):
     """
     Perform semantic similarity search against stored paragraphs,
@@ -17,7 +18,8 @@ def search_similar_purpose(query: str, top_k: int = 3):
     cur = conn.cursor()
 
     # Only search within PURPOSE sections
-    cur.execute("""
+    cur.execute(
+        """
         SELECT
             file_name,
             section,
@@ -28,7 +30,9 @@ def search_similar_purpose(query: str, top_k: int = 3):
         WHERE UPPER(section) LIKE '%%PURPOSE%%'
         ORDER BY embedding <-> %s::vector
         LIMIT %s;
-    """, (query_vector, query_vector, top_k))
+    """,
+        (query_vector, query_vector, top_k),
+    )
 
     results = cur.fetchall()
     cur.close()
@@ -46,6 +50,7 @@ def search_similar_purpose(query: str, top_k: int = 3):
     ]
     return formatted
 
+
 def search_similar(query: str, top_k: int = 3):
     """
     Perform semantic similarity search against stored paragraphs.
@@ -61,7 +66,8 @@ def search_similar(query: str, top_k: int = 3):
     cur = conn.cursor()
 
     # The "<->" operator computes vector distance; lower = more similar
-    cur.execute("""
+    cur.execute(
+        """
         SELECT
             file_name,
             section,
@@ -71,7 +77,9 @@ def search_similar(query: str, top_k: int = 3):
         FROM policy_paragraphs
         ORDER BY embedding <-> %s::vector
         LIMIT %s;
-    """, (query_vector, query_vector, top_k))
+    """,
+        (query_vector, query_vector, top_k),
+    )
 
     results = cur.fetchall()
     cur.close()

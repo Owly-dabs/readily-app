@@ -36,7 +36,7 @@ def extract_policy_and_procedure(pdf_path: str) -> str:
         r"II\.\s*POLICY(?P<policy>.*?)"
         r"III\.\s*PROCEDURE(?P<procedure>.*?)"
         r"I(V)?\.\s*ATTACHMENT\(S\)",
-        flags=re.S | re.I
+        flags=re.S | re.I,
     )
 
     match = pattern.search(full_text)
@@ -78,17 +78,19 @@ def extract_points(pdf_path: str) -> List[Dict]:
         r"II\.\s*POLICY(?P<policy>.*?)"
         r"III\.\s*PROCEDURE(?P<procedure>.*?)"
         r"I(V)?\.\s*ATTACHMENT\(S\)(?P<attachment>.*?)",
-        flags=re.S | re.I
+        flags=re.S | re.I,
     )
 
     match = pattern.search(full_text)
     if not match:
-        raise ValueError(f"Could not find PURPOSE / POLICY / PROCEDURE sections in {pdf_path}")
+        raise ValueError(
+            f"Could not find PURPOSE / POLICY / PROCEDURE sections in {pdf_path}"
+        )
 
     sections = {
         "purpose": match.group("purpose").strip(),
         "policy": match.group("policy").strip(),
-        "procedure": match.group("procedure").strip()
+        "procedure": match.group("procedure").strip(),
     }
     logger.debug(f"purpose: {sections['purpose'][:30]}...")
     logger.debug(f"policy: {sections['policy'][:30]}...")
@@ -99,9 +101,9 @@ def extract_points(pdf_path: str) -> List[Dict]:
     for section_name, section_text in sections.items():
         # Split paragraphs and strip whitespace
         paragraphs = [p.strip() for p in section_text.split("\n\n") if p.strip()]
-        
+
         logger.debug(f"Found {len(paragraphs)} paragraphs in section {section_name}")
-        
+
         # Merge short paragraphs
         merged_paragraphs = []
         i = 0
@@ -116,18 +118,19 @@ def extract_points(pdf_path: str) -> List[Dict]:
             else:
                 merged_paragraphs.append(current)
                 i += 1
-                
+
         logger.debug(f"Found {len(paragraphs)} paragraphs in section {section_name}")
 
         # Add merged paragraphs to results
         for i, paragraph in enumerate(merged_paragraphs, start=1):
-            results.append({
-                "file_name": file_name,
-                "section": section_name,
-                "paragraph_id": i,
-                "content": paragraph
-            })
-        
+            results.append(
+                {
+                    "file_name": file_name,
+                    "section": section_name,
+                    "paragraph_id": i,
+                    "content": paragraph,
+                }
+            )
+
     logger.info(f"Extracted {len(results)} paragraphs from {file_name}")
     return results
-

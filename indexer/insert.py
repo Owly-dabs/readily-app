@@ -2,6 +2,7 @@ from indexer.db import get_connection
 from indexer.embed import embed_text
 from logs import logger
 
+
 def save_results_to_db(cur, results):
     """
     Insert a list of dicts into the database.
@@ -14,11 +15,14 @@ def save_results_to_db(cur, results):
 
     for r in results:
         embedding = embed_text(r["content"])
-        cur.execute("""
+        cur.execute(
+            """
             INSERT INTO policy_paragraphs
             (file_name, section, paragraph_id, content, embedding)
             VALUES (%s, %s, %s, %s, %s)
-        """, (r["file_name"], r["section"], r["paragraph_id"], r["content"], embedding))
+        """,
+            (r["file_name"], r["section"], r["paragraph_id"], r["content"], embedding),
+        )
 
     logger.info(f"Inserted {len(results)} rows, committing...")
 
@@ -26,7 +30,8 @@ def save_results_to_db(cur, results):
     # cur.close()
     # conn.close()
     # logger.info(f"✅ Inserted {len(results)} rows into policy_paragraphs")
-    
+
+
 def clear_table():
     """Delete all rows from the policy_paragraphs table."""
     conn = get_connection()
@@ -37,7 +42,8 @@ def clear_table():
     cur.close()
     conn.close()
     logger.info(f"Cleared table, deleted {deleted} rows.")
-    
+
+
 def check_results_in_db():
     """Check how many rows are in the policy_paragraphs table."""
     conn = get_connection()

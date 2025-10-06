@@ -4,9 +4,10 @@ import fire
 from indexer import parse, main, search
 
 if __name__ == "__main__":
-    fire.Fire({
-        "parse": parse,
-        "index": main,
-        "search": search,
-    })
-    
+    fire.Fire(
+        {
+            "parse": parse,
+            "index": main,
+            "search": search,
+        }
+    )
