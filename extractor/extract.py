@@ -3,11 +3,12 @@ import json
 import re
 from logs import logger
 from typing import List, Dict, Optional
+from datamodels import ResponseItem
 
 client = genai.Client()
 
 
-def extract_compliance_questions(text: str) -> List[Dict[str, str]]:
+def extract_compliance_questions(text: str) -> List[ResponseItem]:
     """
     Extract audit or compliance questions from the given text using Gemini AI.
 
@@ -15,7 +16,7 @@ def extract_compliance_questions(text: str) -> List[Dict[str, str]]:
         text (str): The input text to analyze for compliance questions
 
     Returns:
-        List[Dict[str, str]]: A list of dictionaries containing question_id and question_text
+        List[Dict[str, str]]: A list of dictionaries containing id and requirement
 
     Raises:
         ValueError: If text is empty or None
@@ -43,7 +44,7 @@ Focus on questions that would be relevant for:
 - Governance reviews
 
 Return ONLY a valid JSON array with objects in this exact format:
-[{{"question_id": 1, "question_text": "What is the company's policy on data retention?"}}]
+[{{"id": 1, "requirement": "What is the company's policy on data retention?"}}]
 
 Rules:
 - Extract questions as they appear in the text, don't rephrase them
@@ -61,7 +62,7 @@ Text to analyze:
         # Generate response from Gemini
         logger.info("Generating content from Gemini model...")
         response = client.models.generate_content(
-            model="gemini-2.5-flash", contents=prompt
+            model="gemini-flash-latest", contents=prompt
         )
 
         if not response or not response.text:
@@ -83,16 +84,21 @@ Text to analyze:
         validated_questions = []
         for i, question in enumerate(questions, 1):
             if _is_valid_question(question):
-                # Ensure question_id matches the sequential order
-                question["question_id"] = i
-                validated_questions.append(question)
+                # Ensure id matches the sequential order
+                question["id"] = i
+                # Validate that we can create a ResponseItem from this data
+                try:
+                    ResponseItem(**question)
+                    validated_questions.append(question)
+                except Exception as e:
+                    logger.warning(f"Skipping question that cannot be converted to ResponseItem: {question}, error: {e}")
             else:
                 logger.warning(f"Skipping invalid question format: {question}")
 
         logger.info(
             f"Successfully extracted {len(validated_questions)} compliance questions"
         )
-        return validated_questions
+        return [ResponseItem(**question) for question in validated_questions]
 
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse JSON response: {e}")
@@ -140,10 +146,10 @@ def _is_valid_question(question: Dict) -> bool:
     if not isinstance(question, dict):
         return False
 
-    if "question_text" not in question:
+    if "requirement" not in question:
         return False
 
-    question_text = question.get("question_text", "").strip()
+    question_text = question.get("requirement", "").strip()
     if not question_text:
         return False
 
@@ -198,7 +204,7 @@ def test_extraction():
         questions = extract_compliance_questions(sample_text)
         print(f"Extracted {len(questions)} questions:")
         for question in questions:
-            print(f"  {question['question_id']}: {question['question_text']}")
+            print(f"  {question.id}: {question.requirement}")
         return questions
     except Exception as e:
         print(f"Error during testing: {e}")
