@@ -6,5 +6,14 @@ class ResponseItem(BaseModel):
     id: int
     requirement: str
     is_met: Optional[bool] = None
+    file_name: Optional[str] = None
     citation: Optional[str] = None
     explanation: Optional[str] = None
+
+
+class PolicyRow(BaseModel):
+    file_name: str
+    section: str
+    paragraph_id: Optional[int] = None
+    content: str
+    embedding: Optional[List[float]] = None

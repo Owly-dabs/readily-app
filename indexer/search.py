@@ -1,5 +1,7 @@
 from indexer.db import get_connection
 from indexer.embed import embed_text
+from datamodels import PolicyRow
+from logs import logger
 
 
 def search_similar_purpose(query: str, top_k: int = 3):
@@ -10,7 +12,7 @@ def search_similar_purpose(query: str, top_k: int = 3):
         query: User's text query
         top_k: Number of results to return
     Returns:
-        List of (file_name, section, paragraph_id, content, similarity_score)
+        List of PolicyRow objects
     """
     query_vector = embed_text(query)
 
@@ -38,16 +40,18 @@ def search_similar_purpose(query: str, top_k: int = 3):
     cur.close()
     conn.close()
 
-    formatted = [
-        {
-            "file_name": r[0],
-            "section": r[1],
-            "paragraph_id": r[2],
-            "content": r[3],
-            "similarity": float(r[4]),
-        }
-        for r in results
-    ]
+    formatted = []
+    for r in results:
+        policy_row = PolicyRow(
+            file_name=r[0],
+            section=r[1],
+            paragraph_id=r[2],
+            content=r[3]
+        )
+        similarity = float(r[4])
+        logger.info(f"Similarity match: {policy_row.file_name} - {policy_row.section} (similarity: {similarity:.3f})")
+        formatted.append(policy_row)
+
     return formatted
 
 
@@ -58,7 +62,7 @@ def search_similar(query: str, top_k: int = 3):
         query: User's text query
         top_k: Number of results to return
     Returns:
-        List of (file_name, section, paragraph_id, content, similarity_score)
+        List of PolicyRow objects
     """
     query_vector = embed_text(query)
 
@@ -85,16 +89,18 @@ def search_similar(query: str, top_k: int = 3):
     cur.close()
     conn.close()
 
-    formatted = [
-        {
-            "file_name": r[0],
-            "section": r[1],
-            "paragraph_id": r[2],
-            "content": r[3],
-            "similarity": float(r[4]),
-        }
-        for r in results
-    ]
+    formatted = []
+    for r in results:
+        policy_row = PolicyRow(
+            file_name=r[0],
+            section=r[1],
+            paragraph_id=r[2],
+            content=r[3]
+        )
+        similarity = float(r[4])
+        logger.info(f"Similarity match: {policy_row.file_name} - {policy_row.section} (similarity: {similarity:.3f})")
+        formatted.append(policy_row)
+
     return formatted
 
 
@@ -121,11 +127,11 @@ def get_policyprocedure(file_path: str):
     conn.close()
 
     formatted = [
-        {
-            "file_name": r[0],
-            "section": r[1],
-            "content": r[2],
-        }
+        PolicyRow(
+            file_name=r[0],
+            section=r[1],
+            content=r[2]
+        )
         for r in results
     ]
     return formatted
@@ -133,9 +139,9 @@ def get_policyprocedure(file_path: str):
 
 if __name__ == "__main__":
     # Example usage
-    query = input("Enter your search query: ")
+    query = "Does the P&P state that the MCP must respond to retrospective requests no longer than 14 calendar days from receipt?"
     results = search_similar_purpose(query, top_k=5)
     print("\n🔍 Top Matches:")
     for i, r in enumerate(results, 1):
-        print(f"\n{i}. [{r['file_name']}] {r['section']} (sim={r['similarity']:.3f})")
-        print(f"{r['content'][:400]}{'...' if len(r['content']) > 400 else ''}")
+        print(f"\n{i}. [{r.file_name}] {r.section}")
+        print(f"{r.content[:400]}{'...' if len(r.content) > 400 else ''}")
