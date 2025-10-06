@@ -30,6 +30,26 @@ def save_results_to_db(cur, results, table_name: str):
     # cur.close()
     # conn.close()
     # logger.info(f"✅ Inserted {len(results)} rows into policy_paragraphs")
+    
+    
+def save_policyprocedure_to_db(cur, results, table_name: str):
+    """
+    Insert a list of dicts into the database.
+    Each result dict should have keys:
+    file_name, section, paragraph_id, content
+    """
+
+    for r in results:
+        cur.execute(
+            f"""
+            INSERT INTO {table_name}
+            (file_name, section, content)
+            VALUES (%s, %s, %s)
+        """,
+            (r["file_name"], r["section"], r["content"]),
+        )
+
+    logger.info(f"Inserted {len(results)} rows, committing...")
 
 
 def clear_table(table_name: str):

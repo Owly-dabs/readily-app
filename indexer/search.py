@@ -98,6 +98,39 @@ def search_similar(query: str, top_k: int = 3):
     return formatted
 
 
+def get_policyprocedure(file_path: str):
+    """Fetch the policy and procedure sections from the policy_procedure table in db."""
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # Fetch all policy and procedure sections for the given file
+    cur.execute(
+        """
+        SELECT
+            file_name,
+            section,
+            content
+        FROM policy_procedure
+        WHERE file_name = %s
+    """,
+        (file_path,)
+    )
+
+    results = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    formatted = [
+        {
+            "file_name": r[0],
+            "section": r[1],
+            "content": r[2],
+        }
+        for r in results
+    ]
+    return formatted
+
+
 if __name__ == "__main__":
     # Example usage
     query = input("Enter your search query: ")

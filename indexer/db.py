@@ -40,7 +40,7 @@ def create_table(table_name:str):
     cur.close()
     conn.close()
     logger.info(f"✅ Table ready: {table_name}")
-
+    
 
 def check_table_exists(table_name: str):
     """Check if the policy_paragraphs table exists."""
@@ -61,5 +61,5 @@ def check_table_exists(table_name: str):
 
 
 if __name__ == "__main__":
-    create_table("policy_purpose")
-    print("Does table exist?", check_table_exists("policy_purpose"))
+    create_table("policy_procedure")
+    print("Does table exist?", check_table_exists("policy_procedure"))

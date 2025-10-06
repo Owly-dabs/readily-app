@@ -7,17 +7,18 @@ from logs import logger
 logger.setLevel("DEBUG")
 
 
-def extract_policy_and_procedure(pdf_path: str) -> str:
+def extract_policy_and_procedure(pdf_path: str) -> List[Dict]:
     """
-    Extracts and returns the combined text of the POLICY and PROCEDURE sections
-    from a CalOptima-style policy PDF.
+    Extracts POLICY and PROCEDURE sections from a CalOptima-style policy PDF
+    and returns them as a list of dictionaries with file_name and content keys.
 
     Args:
         pdf_path (str): Path to the PDF file.
     Returns:
-        str: Combined text from POLICY and PROCEDURE sections.
+        List[Dict]: List of dictionaries with "file_name" and "content" keys.
     """
     pdf_path = Path(pdf_path)
+    file_name = pdf_path.name
 
     # ---- Read entire PDF ----
     with fitz.open(pdf_path) as doc:
@@ -43,13 +44,26 @@ def extract_policy_and_procedure(pdf_path: str) -> str:
     if not match:
         raise ValueError(f"Could not find POLICY / PROCEDURE sections in {pdf_path}")
 
-    # ---- Extract and combine ----
+    # ---- Extract sections ----
     policy_text = match.group("policy").strip()
     procedure_text = match.group("procedure").strip()
 
-    combined_text = f"{policy_text}\n\n{procedure_text}"
-    logger.debug(f"Length of text: {len(combined_text)} characters")
-    return combined_text
+    # ---- Return as list of dictionaries ----
+    results = [
+        {
+            "file_name": file_name,
+            "section": "policy",
+            "content": policy_text,
+        },
+        {
+            "file_name": file_name,
+            "section": "procedure",
+            "content": procedure_text,
+        }
+    ]
+
+    logger.debug(f"Extracted {len(results)} sections from {file_name}")
+    return results
 
 
 def extract_purpose(pdf_path: str) -> List[Dict]:
