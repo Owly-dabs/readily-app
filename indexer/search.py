@@ -49,7 +49,7 @@ def search_similar_purpose(query: str, top_k: int = 3):
             content=r[3]
         )
         similarity = float(r[4])
-        logger.info(f"Similarity match: {policy_row.file_name} - {policy_row.section} (similarity: {similarity:.3f})")
+        logger.debug(f"Similarity match: {policy_row.file_name} - {policy_row.section} (similarity: {similarity:.3f})")
         formatted.append(policy_row)
 
     return formatted
