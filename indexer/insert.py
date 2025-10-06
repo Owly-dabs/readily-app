@@ -3,7 +3,7 @@ from indexer.embed import embed_text
 from logs import logger
 
 
-def save_results_to_db(cur, results):
+def save_results_to_db(cur, results, table_name: str):
     """
     Insert a list of dicts into the database.
     Each result dict should have keys:
@@ -16,8 +16,8 @@ def save_results_to_db(cur, results):
     for r in results:
         embedding = embed_text(r["content"])
         cur.execute(
-            """
-            INSERT INTO policy_paragraphs
+            f"""
+            INSERT INTO {table_name}
             (file_name, section, paragraph_id, content, embedding)
             VALUES (%s, %s, %s, %s, %s)
         """,
@@ -32,23 +32,23 @@ def save_results_to_db(cur, results):
     # logger.info(f"✅ Inserted {len(results)} rows into policy_paragraphs")
 
 
-def clear_table():
-    """Delete all rows from the policy_paragraphs table."""
+def clear_table(table_name: str):
+    """Delete all rows from the specified table."""
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("DELETE FROM policy_paragraphs;")
+    cur.execute(f"DELETE FROM {table_name};")
     deleted = cur.rowcount
+    logger.info(f"Cleared table {table_name}, deleted {deleted} rows.")
     conn.commit()
     cur.close()
     conn.close()
-    logger.info(f"Cleared table, deleted {deleted} rows.")
 
 
-def check_results_in_db():
-    """Check how many rows are in the policy_paragraphs table."""
+def check_results_in_db(table_name: str) -> int:
+    """Check how many rows are in the specified table."""
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) FROM policy_paragraphs;")
+    cur.execute(f"SELECT COUNT(*) FROM {table_name};")
     count = cur.fetchone()[0]
     cur.close()
     conn.close()

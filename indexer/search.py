@@ -26,7 +26,7 @@ def search_similar_purpose(query: str, top_k: int = 3):
             paragraph_id,
             content,
             1 - (embedding <#> %s::vector) AS similarity
-        FROM policy_paragraphs
+        FROM policy_purpose
         WHERE UPPER(section) LIKE '%%PURPOSE%%'
         ORDER BY embedding <-> %s::vector
         LIMIT %s;

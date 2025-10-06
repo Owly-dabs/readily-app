@@ -1,6 +1,7 @@
 # db.py
 import os
 import psycopg2
+from psycopg2 import sql
 
 from logs import logger
 
@@ -15,14 +16,16 @@ def get_connection():
     )
 
 
-def create_table():
+def create_table(table_name:str):
     """Create the table if it doesn't exist (requires pgvector extension)."""
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute(
-        """
-        CREATE EXTENSION IF NOT EXISTS vector;
-        CREATE TABLE IF NOT EXISTS policy_paragraphs (
+    # Create the pgvector extension
+    cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+
+    # Build SQL safely with psycopg2.sql
+    query = sql.SQL("""
+        CREATE TABLE IF NOT EXISTS {table} (
             id SERIAL PRIMARY KEY,
             file_name TEXT,
             section TEXT,
@@ -30,15 +33,16 @@ def create_table():
             content TEXT,
             embedding vector(768)
         );
-    """
-    )
+    """).format(table=sql.Identifier(table_name))
+
+    cur.execute(query)
     conn.commit()
     cur.close()
     conn.close()
-    logger.info("✅ Table ready: policy_paragraphs")
+    logger.info(f"✅ Table ready: {table_name}")
 
 
-def check_table_exists():
+def check_table_exists(table_name: str):
     """Check if the policy_paragraphs table exists."""
     conn = get_connection()
     cur = conn.cursor()
@@ -46,9 +50,9 @@ def check_table_exists():
         """
         SELECT EXISTS (
             SELECT FROM information_schema.tables 
-            WHERE table_name = 'policy_paragraphs'
+            WHERE table_name = %s
         );
-    """
+    """, (table_name,)
     )
     exists = cur.fetchone()[0]
     cur.close()
@@ -57,5 +61,5 @@ def check_table_exists():
 
 
 if __name__ == "__main__":
-    # create_table()
-    print("Does table exist?", check_table_exists())
+    create_table("policy_purpose")
+    print("Does table exist?", check_table_exists("policy_purpose"))
