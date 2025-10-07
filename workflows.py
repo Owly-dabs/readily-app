@@ -12,14 +12,23 @@ def audit_one(req: ResponseItem, top_k: int = 3) -> ResponseItem:
 
     for p in policies:
         proceduresRows = get_policyprocedure(p.file_name)
-        policy_content.extend(proceduresRows)
+        policy_item = PolicyRow(
+            file_name=p.file_name,
+            section='policy+procedure',
+            paragraph_id=p.paragraph_id,
+            content='',
+        )
+        for section in proceduresRows:
+            policy_item.content += section.content
+        policy_content.append(policy_item)
 
     logger.info(
-        f"Retrieved {len(policy_content)} policy/procedure sections from {len(policies)} documents."
+        f"Retrieved {len(policy_content)} policy+procedure sections from {len(policies)} documents."
     )
 
     is_met_flag = False
     for policy in policy_content:
+        
         check_result = check_requirement(policy.content, req.requirement)
         if check_result["is_met"]:
             is_met_flag = True
