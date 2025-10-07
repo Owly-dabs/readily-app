@@ -43,13 +43,12 @@ def search_similar_purpose(query: str, top_k: int = 3):
     formatted = []
     for r in results:
         policy_row = PolicyRow(
-            file_name=r[0],
-            section=r[1],
-            paragraph_id=r[2],
-            content=r[3]
+            file_name=r[0], section=r[1], paragraph_id=r[2], content=r[3]
         )
         similarity = float(r[4])
-        logger.debug(f"Similarity match: {policy_row.file_name} - {policy_row.section} (similarity: {similarity:.3f})")
+        logger.debug(
+            f"Similarity match: {policy_row.file_name} - {policy_row.section} (similarity: {similarity:.3f})"
+        )
         formatted.append(policy_row)
 
     return formatted
@@ -92,13 +91,12 @@ def search_similar(query: str, top_k: int = 3):
     formatted = []
     for r in results:
         policy_row = PolicyRow(
-            file_name=r[0],
-            section=r[1],
-            paragraph_id=r[2],
-            content=r[3]
+            file_name=r[0], section=r[1], paragraph_id=r[2], content=r[3]
         )
         similarity = float(r[4])
-        logger.info(f"Similarity match: {policy_row.file_name} - {policy_row.section} (similarity: {similarity:.3f})")
+        logger.info(
+            f"Similarity match: {policy_row.file_name} - {policy_row.section} (similarity: {similarity:.3f})"
+        )
         formatted.append(policy_row)
 
     return formatted
@@ -119,21 +117,14 @@ def get_policyprocedure(file_path: str):
         FROM policy_procedure
         WHERE file_name = %s
     """,
-        (file_path,)
+        (file_path,),
     )
 
     results = cur.fetchall()
     cur.close()
     conn.close()
 
-    formatted = [
-        PolicyRow(
-            file_name=r[0],
-            section=r[1],
-            content=r[2]
-        )
-        for r in results
-    ]
+    formatted = [PolicyRow(file_name=r[0], section=r[1], content=r[2]) for r in results]
     return formatted
 
 

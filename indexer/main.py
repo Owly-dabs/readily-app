@@ -1,5 +1,10 @@
 from indexer.db import get_connection
-from indexer.insert import save_results_to_db, check_results_in_db, clear_table, save_policyprocedure_to_db
+from indexer.insert import (
+    save_results_to_db,
+    check_results_in_db,
+    clear_table,
+    save_policyprocedure_to_db,
+)
 from indexer.parse import extract_points, extract_purpose, extract_policy_and_procedure
 from logs import logger
 
@@ -65,7 +70,7 @@ def insert_purpose_pdfs_in_dir(directory_path: str):
     conn.close()
     logger.info(f"✅ Inserted {len(pdf_files)} files into policy_purpose")
 
-    
+
 def insert_pdf_policyprocedure(cur, file_path: str):
     """Parse a PDF and insert its contents into the database."""
     try:
@@ -75,7 +80,7 @@ def insert_pdf_policyprocedure(cur, file_path: str):
         return
 
     save_policyprocedure_to_db(cur, results, "policy_procedure")
-    
+
 
 def insert_policyprocedure_pdfs_in_dir(directory_path: str):
     """Parse all PDFs in a directory and insert their contents into the database."""

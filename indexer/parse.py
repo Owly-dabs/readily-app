@@ -59,7 +59,7 @@ def extract_policy_and_procedure(pdf_path: str) -> List[Dict]:
             "file_name": file_name,
             "section": "procedure",
             "content": procedure_text,
-        }
+        },
     ]
 
     logger.debug(f"Extracted {len(results)} sections from {file_name}")
@@ -88,8 +88,7 @@ def extract_purpose(pdf_path: str) -> List[Dict]:
     # ---- Split into main sections ----
     # Use non-greedy matching so each section captures up to the next Roman numeral
     pattern = re.compile(
-        r"I\.\s*PURPOSE(?P<purpose>.*?)"
-        r"II\.\s*POLICY(?P<policy>.*?)",
+        r"I\.\s*PURPOSE(?P<purpose>.*?)" r"II\.\s*POLICY(?P<policy>.*?)",
         flags=re.S | re.I,
     )
 
@@ -102,7 +101,7 @@ def extract_purpose(pdf_path: str) -> List[Dict]:
     sections = {
         "purpose": match.group("purpose").strip(),
     }
-    
+
     logger.debug(f"purpose: {sections['purpose'][:30]}...")
     logger.info(f"Extracted sections: {', '.join(sections.keys())}")
 

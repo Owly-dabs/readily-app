@@ -16,7 +16,7 @@ def get_connection():
     )
 
 
-def create_table(table_name:str):
+def create_table(table_name: str):
     """Create the table if it doesn't exist (requires pgvector extension)."""
     conn = get_connection()
     cur = conn.cursor()
@@ -24,7 +24,8 @@ def create_table(table_name:str):
     cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
 
     # Build SQL safely with psycopg2.sql
-    query = sql.SQL("""
+    query = sql.SQL(
+        """
         CREATE TABLE IF NOT EXISTS {table} (
             id SERIAL PRIMARY KEY,
             file_name TEXT,
@@ -33,14 +34,15 @@ def create_table(table_name:str):
             content TEXT,
             embedding vector(768)
         );
-    """).format(table=sql.Identifier(table_name))
+    """
+    ).format(table=sql.Identifier(table_name))
 
     cur.execute(query)
     conn.commit()
     cur.close()
     conn.close()
     logger.info(f"✅ Table ready: {table_name}")
-    
+
 
 def check_table_exists(table_name: str):
     """Check if the policy_paragraphs table exists."""
@@ -52,7 +54,8 @@ def check_table_exists(table_name: str):
             SELECT FROM information_schema.tables 
             WHERE table_name = %s
         );
-    """, (table_name,)
+    """,
+        (table_name,),
     )
     exists = cur.fetchone()[0]
     cur.close()
