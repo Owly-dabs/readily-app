@@ -39,7 +39,7 @@ async def health_check():
 @app.post("/audit_one")
 def text_audit_one(request: ResponseItem):
     try:
-        response = audit_one(request)
+        response = audit_one(request, request.top_k)
         return {"response": response}
 
     except ValueError as ve:

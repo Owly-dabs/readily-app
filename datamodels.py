@@ -13,6 +13,7 @@ class ResponseItem(BaseModel):
     file_name: Optional[str] = None
     citation: Optional[str] = None
     explanation: Optional[str] = None
+    top_k: Optional[int] = 3
 
 
 class PolicyRow(BaseModel):

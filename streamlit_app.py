@@ -109,6 +109,15 @@ def main():
 
     uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
 
+    # ✅ Slider for top_k selection (placed before extract button)
+    top_k = st.slider(
+        "Select number of top policies to search (top_k)",
+        min_value=1,
+        max_value=10,
+        value=3,
+        help="Controls how many top policy matches to retrieve from the database for each question.",
+    )
+
     if uploaded_file is not None:
         st.success(f"✅ File uploaded: {uploaded_file.name}")
 
@@ -132,7 +141,7 @@ def main():
 
                 # Dynamic placeholders
                 status_area = st.empty()
-                question_area = st.empty()  # 👈 temporary display for current question
+                question_area = st.empty()
                 responses_area = st.empty()
 
                 all_responses = []
@@ -142,7 +151,10 @@ def main():
                 # Loop over each question progressively
                 for i, question in enumerate(questions, start=1):
                     with st.spinner(f"Processing Question {i}/{total}..."):
-                        # Show the current question temporarily
+                        # Assign user-selected top_k
+                        question.top_k = top_k
+
+                        # Show current question temporarily
                         question_area.markdown(
                             f"📡 **Sending Question {i}/{total}:** {question.requirement}"
                         )
@@ -156,9 +168,28 @@ def main():
                             all_responses.append({"error": f"Failed at question {i}"})
                             status_area.warning(f"⚠️ Failed at Question {i}/{total}")
 
-                        # Update JSON progressively
-                        responses_area.json(all_responses)
-                        time.sleep(0.3)
+                        # Update responses progressively with expandable cards
+                        responses_area.empty()  # clear the previous display
+                        with responses_area.container():
+                            st.subheader("📋 API Responses")
+                            for i, res in enumerate(all_responses, start=1):
+                                res = res.get("response")
+                                if res:
+                                    with st.expander(
+                                        f"Question {i}: {res.get('requirement', '')[:100]}..."
+                                    ):
+                                        st.markdown(
+                                            f"**✅ Requirement Met:** {'Yes' if res.get('is_met') else 'No'}"
+                                        )
+                                        st.markdown(
+                                            f"**📄 Citation:** {res.get('citation', '—')}"
+                                        )
+                                        if res.get("explanation"):
+                                            st.markdown(
+                                                f"**🧩 Explanation:** {res['explanation']}"
+                                            )
+                                        if res.get("file_name"):
+                                            st.caption(f"📁 Source: {res['file_name']}")
 
                         # Clear the temporary question display
                         question_area.empty()
@@ -173,8 +204,9 @@ def main():
             """
         ### How to use:
         1. **Upload PDF**  
-        2. **Click Extract & Process**  
-        3. **Watch responses appear one by one!**
+        2. **Select your desired `top_k` value**  
+        3. **Click Extract & Process**  
+        4. **Watch responses appear one by one!**
         """
         )
 
