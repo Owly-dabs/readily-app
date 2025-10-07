@@ -2,6 +2,10 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 
+class TextRequest(BaseModel):
+    text: str
+
+
 class ResponseItem(BaseModel):
     id: int
     requirement: str
