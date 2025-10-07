@@ -8,6 +8,20 @@ from datamodels import ResponseItem
 client = genai.Client()
 
 
+def extract_questions(text: str) -> List[ResponseItem]:
+    """
+    Extracts numbered questions from text and returns them as ResponseItem objects.
+    """
+    pattern = r"\d+\.\s*(.+?\?)"
+    matches = re.findall(pattern, text, flags=re.DOTALL)
+
+    responses = []
+    for i, q in enumerate(matches, start=1):
+        cleaned_q = " ".join(q.split())  # normalize whitespace
+        responses.append(ResponseItem(id=i, requirement=cleaned_q))
+    return responses
+
+
 def extract_compliance_questions(text: str) -> List[ResponseItem]:
     """
     Extract audit or compliance questions from the given text using Gemini AI.
